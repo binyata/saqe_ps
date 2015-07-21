@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>PS-Websocket Monitor</title>
+	</head>
+   <body>
+      <h1>Subscribe upon Call</h1>
+      <p>Open JavaScript console to watch output.</p>
+      <script src="https://autobahn.s3.amazonaws.com/autobahnjs/latest/autobahn.min.jgz"></script>
+      <script> 
+var myVar;
+var connection = new autobahn.Connection({
+	url: "wss://socket2.insidesales.com:80/ws",
+	realm: 'realm1'
+});
+ 
+// timeout variable count down from 5 minutes, if 0, make screen go red alert, once you receive a frame, reset counter
+connection.onopen = function (new_session) {
+	console.log("connected");
+	session = new_session;
+	var consoleLog;
+	
+//subscribe to a topic
+	function onevent(args) {
+		//Stop the interval Time
+		clearInterval(myVar);
+		
+		
+		
+		//call interval timer function
+		startTimer();
+		
+		
+		
+		document.body.style.backgroundColor = "white";
+		console.log("Event:", args[0]);
+		//Extract log from WAMP
+		consoleLog = args[0];
+		//Send extracted log to HTML
+		document.getElementById("output").innerHTML= consoleLog;
+		document.getElementById("messageBoard").innerHTML = "";
+	}
+	
+	
+	
+	function startTimer(){
+	//This will be called once function is done, then the interval function starts	
+	myVar = setInterval(function(){myTimer()},1000);
+	//how many seconds to set for timeout
+	var counter = 420;
+	
+	
+		function myTimer() {
+		//if timer goes down to zero, then have screen turn red. Will implement email sending in the future	
+			counter--;
+			
+			if(counter === 120){
+				document.body.style.backgroundColor = "yellow";
+				document.getElementById("messageBoard").innerHTML = "Warning! This has gone beyond the refreshing leaderboard point!";
+			}
+			
+			if(counter === 0){
+				document.body.style.backgroundColor = "red";
+				clearInterval(myVar);
+				document.getElementById("messageBoard").innerHTML = "ERROR! We have gone beyond seven minutes! Sending out Emails!";
+			}
+			document.getElementById("counthtml").innerHTML = counter;
+		}	
+		
+	}
+	
+
+		
+	session.subscribe('leaderlist_update.1396', onevent);
+	session.subscribe('leaderlist_update.1398', onevent);
+	session.subscribe('leaderlist_update.1400', onevent);
+	session.subscribe('leaderlist_update.2572', onevent);
+	session.subscribe('leaderlist_update.1396', onevent);
+	session.subscribe('leaderlist_update.1398', onevent);
+	session.subscribe('leaderlist_update.1400', onevent);
+	session.subscribe('leaderlist_update.2572', onevent);
+	session.subscribe('leaderboard_events.20072262', onevent);
+}
+
+
+
+connection.onclose = function (reason, details) {
+	console.log("connection lost", reason, details);
+	session = null;
+}
+		 
+		 
+connection.open(); 
+
+       
+      </script>
+	  
+		<div Id="output">
+
+		</div>
+		
+		
+		
+		<div Id="counthtml">
+
+		</div>
+		
+		
+		<div id="messageBoard">
+		
+		</div>
+   </body>
+</html>
